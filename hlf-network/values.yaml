@@ -1,0 +1,51 @@
+# Default values for hlf-kube.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+hyperledgerVersion: 1.4.3
+coreDNSVersion: 1.6.4
+tlsEnabled: true
+hlfNetworkNamespace: gke-hlf-ns
+hlfNetworkId: test
+hlfKubeDNSSvcIP: 10.0.0.10
+
+# common persistence settings
+persistence:
+  storageClass: standard
+
+# peer settings. applies to all peers
+peer:
+  logLevel: info
+  chaincode:
+    logging:
+      level:  info
+      shim:   info
+  persistence:
+    size: 16Gi
+  operations:
+    enabled: true
+    metrics:
+      provider: prometheus
+
+# CouchDB settings. applies to all CouchDB's
+couchdb:
+  version: 0.4.15
+  userName: peercouchuser
+  password: peercouchpass
+  persistence:
+    size: 16Gi
+
+# Orderer settings. applies to all Orderer pods
+orderer:
+  # should be greater than 1 only if kafka orderer is used
+  logLevel: info
+  persistence:
+    size: 16Gi
+
+# CA (Certificate Authority) settings. applies to all CA's
+ca:
+  userName: admin
+  password: adminpw
+  logLevel: info
+  # TODO storage classs?
+  persistence:
+    size: 16Gi

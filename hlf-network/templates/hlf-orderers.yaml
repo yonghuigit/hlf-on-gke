@@ -1,0 +1,145 @@
+{{- range $i, $org := $.Values.OrdererOrgs }}
+{{- $hlfNodeType := "orderer"}}
+{{- $parameters := dict "currOrg" $org "currHlfNodeType" $hlfNodeType "global" $}}
+{{- include "hlf-network.secrets"  $parameters }}
+{{- include "hlf-network.services" $parameters }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $org.Name | lower }}ord
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+spec:
+  replicas: {{ len $org.Specs }}
+  serviceName: {{ $org.Name | lower }}
+  selector:
+    matchLabels:
+      app: {{ $hlfNodeType }}Pod
+      org: {{ $org.Name }}
+  volumeClaimTemplates:
+  - metadata:
+      name: orderer-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: {{ $.Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ $.Values.orderer.persistence.size }}
+  template:
+    metadata:
+      labels:
+        app: {{ $hlfNodeType }}Pod
+        org: {{ $org.Name }}
+    spec:
+      volumes:
+      {{- range $i, $host := $org.Specs }}
+      {{- $hostIndex := regexFind "[0-9]" $host.Hostname }}
+      - name: orderer-tls{{ $hostIndex }}
+        secret:
+          secretName: hlf-orderer--{{ $org.Name | lower }}--{{ $host.Hostname | lower }}-tls
+      - name: orderer-msp{{ $hostIndex }}
+        secret:
+          secretName: hlf-orderer--{{ $org.Name | lower }}--{{ $host.Hostname | lower }}-msp
+          items:
+          - key: cert.pem
+            path: signcerts/cert.pem
+          - key: key.pem
+            path: keystore/key.pem
+          - key: cacert.pem
+            path: cacerts/cert.pem
+          - key: admincert.pem
+            path: admincerts/cert.pem
+      {{- end }} {{- /* org.Specs */ -}}{{""}}
+      - name: genesis
+        secret:
+          secretName: hlf-genesis.block
+      containers:
+      - name: orderer
+        image: hyperledger/fabric-orderer:{{ $.Values.hyperledgerVersion }}
+        command:
+          - bash
+          - -c
+          - |
+            echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@$HLF_KUBE_POD_NAME(((((((((((((((((((((((((((((((((((((((((((((((@@@@@@@@@@@@@@((((((((("
+            ordinal=${HLF_KUBE_POD_NAME: -1}
+            export ORDERER_GENERAL_LOCALMSPDIR="/var/hyperledger/orderer/msp$ordinal"
+            export ORDERER_GENERAL_TLS_PRIVATEKEY="/var/hyperledger/orderer/tls$ordinal/server.key"
+            export ORDERER_GENERAL_TLS_CERTIFICATE="/var/hyperledger/orderer/tls$ordinal/server.crt"
+            export ORDERER_GENERAL_TLS_ROOTCAS="/var/hyperledger/orderer/tls$ordinal/ca.crt"
+            export ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY="/var/hyperledger/orderer/tls$ordinal/server.key"
+            export ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE="/var/hyperledger/orderer/tls$ordinal/server.crt"
+            export ORDERER_GENERAL_CLUSTER_ROOTCAS="/var/hyperledger/orderer/tls$ordinal/ca.crt"
+            echo "ORDERER_GENERAL_LOCALMSPDIR set to ${ORDERER_GENERAL_LOCALMSPDIR}"
+            echo "ORDERER_GENERAL_TLS_PRIVATEKEY set to ${ORDERER_GENERAL_TLS_PRIVATEKEY}"
+            echo "ORDERER_GENERAL_TLS_CERTIFICATE set to ${ORDERER_GENERAL_TLS_CERTIFICATE}"
+            echo "ORDERER_GENERAL_TLS_ROOTCAS set to ${ORDERER_GENERAL_TLS_ROOTCAS}"
+            echo "ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY set to ${ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY}"
+            echo "ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE set to ${ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE}"
+            echo "ORDERER_GENERAL_CLUSTER_ROOTCAS set to ${ORDERER_GENERAL_CLUSTER_ROOTCAS}"
+            echo "ORDERER_OPERATIONS_LISTENADDRESS set to ${ORDERER_OPERATIONS_LISTENADDRESS}"
+            echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@(((((((((((((((((((((((((((((((((((((((((((((((((((((((@@@@@@@@@@@@@@((((((((("
+
+            orderer
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 3
+        volumeMounts:
+        - mountPath: /var/hyperledger/production/orderer/
+          name: orderer-data
+        {{- range $i, $host := $org.Specs }}
+        {{- $hostIndex := regexFind "[0-9]" $host.Hostname }}
+        - mountPath: /var/hyperledger/orderer/tls{{ $hostIndex }}/
+          name: orderer-tls{{ $hostIndex }}
+        - mountPath: /var/hyperledger/orderer/msp{{ $hostIndex }}/
+          name: orderer-msp{{ $hostIndex }}
+        {{- end }} {{- /* org.Specs */ -}}{{""}}
+        - mountPath: /var/hyperledger/orderer/
+          name: genesis
+        env:
+        - name: HLF_KUBE_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['statefulset.kubernetes.io/pod-name']
+        # TODO move configurable ones to configmaps
+        - name: FABRIC_LOGGING_SPEC
+          value: {{ $.Values.orderer.logLevel }}
+        - name: ORDERER_GENERAL_LISTENADDRESS
+          value: 0.0.0.0
+        - name: ORDERER_GENERAL_LISTENPORT
+          value: "443"
+        - name: ORDERER_OPERATIONS_LISTENADDRESS
+          value: 0.0.0.0:8443
+        - name: ORDERER_GENERAL_GENESISMETHOD
+          value: file
+        - name: ORDERER_GENERAL_GENESISFILE
+          value: /var/hyperledger/orderer/genesis.block
+        - name: ORDERER_GENERAL_LOCALMSPID
+          value: {{ $org.Name }}MSP
+        - name: ORDERER_GENERAL_TLS_ENABLED
+          value: {{ $.Values.tlsEnabled | quote }}
+        - name: HFC_LOGGING
+          value: '{"info":"console"}'
+        - name: GRPC_VERBOSITY
+          value: ERROR
+        - name: GRPC_TRACE
+          value:  all
+---
+{{- end }} {{- /* Orgs */ -}}

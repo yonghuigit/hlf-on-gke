@@ -1,0 +1,34 @@
+{{- range $i, $org := $.Values.OrdererOrgs }}
+---
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: hlf-cert-{{ $org.Name | lower }}
+spec:
+  domains:
+    - {{ $org.Domain | lower }}
+---
+{{- end }} {{- /* OrdererOrgs */ -}}{{""}}
+
+{{- range $i, $org := $.Values.PeerOrgs }}
+---
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: hlf-cert-{{ $org.Name | lower }}
+spec:
+  domains:
+    - peer.{{ $org.Domain | lower }}
+---
+{{- range $i, $host := $org.Specs }}
+---
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: hlf-cert-{{ $org.Name | lower }}-{{ $host.Hostname | lower }}
+spec:
+  domains:
+    - {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
+---
+{{- end }} {{- /* org.Specs */ -}}
+{{- end }} {{- /* PeerOrgs */ -}}{{""}}

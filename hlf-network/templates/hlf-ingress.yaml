@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hlf-ingress
+  namespace: {{ $.Values.hlfNetworkNamespace }}  
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+  labels:
+    purpose: hlf-network-ingress-for-lb
+spec:
+  rules:
+  {{- range $i, $org := $.Values.OrdererOrgs }}
+  - host: {{ $org.Domain | lower }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ $org.Name | lower }}-cluster-nodeport
+          servicePort: 443
+  {{- range $i, $host := $org.Specs }}
+  - host: {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ $org.Name | lower }}-{{ $host.Hostname | lower }}-cluster-nodeport
+          servicePort: 443
+  {{- end }} {{- /* org.Specs */ -}}
+  {{- end }} {{- /* OrdererOrgs */ -}}
+
+  {{- range $i, $org := $.Values.PeerOrgs }}
+  - host: peer.{{ $org.Domain | lower }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ $org.Name | lower }}-cluster-nodeport
+          servicePort: 443
+  {{- range $i, $host := $org.Specs }}
+  - host: {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ $org.Name | lower }}-{{ $host.Hostname | lower }}-cluster-nodeport
+          servicePort: 443
+  {{- end }} {{- /* org.Specs */ -}}
+  {{- end }} {{- /* PeerOrgs */ -}}

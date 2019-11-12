@@ -1,0 +1,71 @@
+{{/* Service Template for Orderer/Peer Nodes. Expect currOrg, currHlfNodeType and global to be passed in */}}
+{{- define "hlf-network.services" }}
+
+{{- $org := .currOrg}}
+{{- $hlfNodeType := .currHlfNodeType}}
+{{- $ := .global}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $org.Name | lower }}
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+  labels:
+    purpose: org-level-headless-for-internal-dns
+spec:
+  clusterIP: None
+  selector:
+    app: {{ $hlfNodeType }}Pod
+    org: {{ $org.Name }}
+---
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $org.Name | lower }}-cluster-nodeport
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+  labels:
+    purpose: org-level-cluster-nodeport-for-load-balancer
+  annotations:
+    cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
+    service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2"}'
+spec:
+  type: NodePort
+  ports:
+  - name: grpc
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    app: {{ $hlfNodeType }}Pod
+    org: {{ $org.Name }}
+---
+
+{{- range $i, $host := $org.Specs }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $org.Name | lower }}-{{ $host.Hostname | lower }}-cluster-nodeport
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+  labels:
+    purpose: node-level-cluster-nodeport-for-load-balancer
+  annotations:
+    cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
+    service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2"}'
+spec:
+  type: NodePort
+  ports:
+  - name: grpc
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    app: {{ $hlfNodeType }}Pod
+    org: {{ $org.Name }}
+    statefulset.kubernetes.io/pod-name: {{ $org.Name | lower }}{{ $host.Hostname | lower }}
+---
+{{- end }} {{- /* org.Specs */ -}}{{""}}
+
+{{- end }}

@@ -1,0 +1,38 @@
+# Helm install finished.
+# Let's work on setting up the url rewrite in coredns so the orderer/peer nodes can find each other
+export INTERNAL_CORE_DNS_IP=$(kubectl get --namespace kube-system -o jsonpath='{.spec.clusterIP}{"\n"}' services internal-dns); echo $INTERNAL_CORE_DNS_IP
+sed -i -e s/INTERNAL_CORE_DNS_IP/$INTERNAL_CORE_DNS_IP/g kube-common/kube-dns-configmap-update.yaml
+# Change HLF_STUB_DOMAIN to use your own domain, such as example.com, mycompany.net, et. al.
+export HLF_STUB_DOMAIN=example.com
+sed -i -e s/HLF_STUB_DOMAIN/$HLF_STUB_DOMAIN/g kube-common/kube-dns-configmap-update.yaml
+
+# Verify the values have been replaced correctly
+cat kube-common/kube-dns-configmap-update.yaml
+# Be sure to add additional lines for additional stubdomains to point to the same IP
+# Then
+kubectl apply -f kube-common/kube-dns-configmap-update.yaml
+
+# Register a static ip
+gcloud compute addresses create hlf-load-balancer-static-ip --global
+gcloud compute addresses describe hlf-load-balancer-static-ip --global --format='value(address)'
+
+# In your domain DNS management tool, make sure to point following domains to the static ip
+{{- range $i, $org := $.Values.OrdererOrgs }}
+{{ $org.Domain | lower }}
+{{- end }} {{- /* OrdererOrgs */ -}}{{""}}
+
+{{- range $i, $org := $.Values.PeerOrgs }}
+peer.{{ $org.Domain | lower }}
+{{- range $i, $host := $org.Specs }}
+{{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
+{{- end }} {{- /* org.Specs */ -}}
+{{- end }} {{- /* PeerOrgs */ -}}{{""}}
+
+# Wait for the load balancer to show up. This might take 5 to 10 minutes.
+# Click on the load balancer and go to its details.
+# Click on Edit to manually add a frontend configuration.
+# Choose HTTPS (includes HTTP/2) as protocol
+# In IP address, select the reserved static ip hlf-load-balancer-static-ip
+# In Certificate dropdown, select the certificates. Add Additional certificates to select other ones.
+# Remember to click on Update in the left pane to commit the change.
+# It might take 15 minutes for the frontend to show up and the certificates to be provisioned and become active (Green)

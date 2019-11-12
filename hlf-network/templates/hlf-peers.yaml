@@ -1,0 +1,205 @@
+{{- range $i, $org := $.Values.PeerOrgs }}
+{{- $hlfNodeType := "peer"}}
+{{- $parameters := dict "currOrg" $org "currHlfNodeType" $hlfNodeType "global" $}}
+{{- include "hlf-network.secrets"  $parameters }}
+{{- include "hlf-network.services" $parameters }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $org.Name | lower }}peer
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+spec:
+  replicas: {{ len $org.Specs }}
+  serviceName: {{ $org.Name | lower }}
+  selector:
+    matchLabels:
+      app: {{ $hlfNodeType }}Pod
+      org: {{ $org.Name }}
+  volumeClaimTemplates:
+  - metadata:
+      name: peer-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: {{ $.Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ $.Values.peer.persistence.size }}
+  - metadata:
+      name: couchdb-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: {{ $.Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ $.Values.couchdb.persistence.size }}
+  template:
+    metadata:
+      labels:
+        app: {{ $hlfNodeType }}Pod
+        org: {{ $org.Name }}
+    spec:
+      volumes:
+      - name: dockersocket
+        hostPath:
+          path: /var/run/docker.sock
+      {{- range $i, $host := $org.Specs }}
+      {{- $hostIndex := regexFind "[0-9]" $host.Hostname }}
+      - name: peer-tls{{ $hostIndex }}
+        secret:
+          secretName: hlf-peer--{{ $org.Name | lower }}--{{ $host.Hostname | lower }}-tls
+      - name: peer-msp{{ $hostIndex }}
+        secret:
+          secretName: hlf-peer--{{ $org.Name | lower }}--{{ $host.Hostname | lower }}-msp
+          items:
+          - key: config.yaml
+            path: config.yaml
+          - key: cert.pem
+            path: signcerts/cert.pem
+          - key: key.pem
+            path: keystore/key.pem
+          - key: cacert.pem
+            path: cacerts/ca.{{ $org.Domain}}-cert.pem
+          - key: tlscacert.pem
+            path: tlscacerts/cert.pem
+          - key: admincert.pem
+            path: admincerts/cert.pem
+      {{- end }} {{- /* org.Specs */ -}}{{""}}
+      containers:
+      # Peer container
+      - name: peer
+        image: hyperledger/fabric-peer:{{ $.Values.hyperledgerVersion }}
+        command: #["sh", "-c", "peer node start"]
+          - bash
+          - -c
+          - |
+            echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@$HLF_KUBE_POD_NAME@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+            ordinal=${HLF_KUBE_POD_NAME: -1}
+            echo "ordinal is $ordinal"
+            export CORE_PEER_ID="peer-${ordinal}"."$HLF_PEER_ORG_DOMAIN"
+            export CORE_PEER_ADDRESS="$CORE_PEER_ID:443"
+            export CORE_PEER_GOSSIP_ENDPOINT="$CORE_PEER_ADDRESS"
+            export CORE_PEER_GOSSIP_EXTERNALENDPOINT="$CORE_PEER_ADDRESS"
+            export CORE_PEER_TLS_CERT_FILE="/etc/hyperledger/fabric/tls$ordinal/server.crt"
+            export CORE_PEER_TLS_KEY_FILE="/etc/hyperledger/fabric/tls$ordinal/server.key"
+            export CORE_PEER_TLS_ROOTCERT_FILE="/etc/hyperledger/fabric/tls$ordinal/ca.crt"
+            export CORE_PEER_MSPCONFIGPATH="/etc/hyperledger/fabric/msp$ordinal"
+            echo "CORE_PEER_NETWORKID set to ${CORE_PEER_NETWORKID}"
+            echo "CORE_PEER_ID set to ${CORE_PEER_ID}"
+            echo "CORE_PEER_ADDRESS set to ${CORE_PEER_ADDRESS}"
+            echo "CORE_PEER_GOSSIP_ENDPOINT set to ${CORE_PEER_GOSSIP_ENDPOINT}"
+            echo "CORE_PEER_GOSSIP_EXTERNALENDPOINT set to ${CORE_PEER_GOSSIP_EXTERNALENDPOINT}"
+            echo "CORE_PEER_TLS_ENABLED set to ${CORE_PEER_TLS_ENABLED}"
+            echo "CORE_PEER_TLS_CERT_FILE set to ${CORE_PEER_TLS_CERT_FILE}"
+            echo "CORE_PEER_TLS_KEY_FILE set to ${CORE_PEER_TLS_KEY_FILE}"
+            echo "CORE_PEER_TLS_ROOTCERT_FILE set to ${CORE_PEER_TLS_ROOTCERT_FILE}"
+            echo "CORE_PEER_MSPCONFIGPATH set to ${CORE_PEER_MSPCONFIGPATH}"
+            echo "CORE_OPERATIONS_LISTENADDRESS set to ${CORE_OPERATIONS_LISTENADDRESS}"
+            echo "CORE_PEER_GOSSIP_BOOTSTRAP set to ${CORE_PEER_GOSSIP_BOOTSTRAP}"
+            echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Done setting env@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+            peer node start
+
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 8443
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 3
+        volumeMounts:
+        - mountPath: /var/hyperledger/production/
+          name: peer-data
+        - mountPath: /host/var/run/docker.sock
+          name: dockersocket
+        {{- range $i, $host := $org.Specs }}
+        {{- $hostIndex := regexFind "[0-9]" $host.Hostname }}
+        - mountPath: /etc/hyperledger/fabric/tls{{ $hostIndex }}/
+          name: peer-tls{{ $hostIndex }}
+        - mountPath: /etc/hyperledger/fabric/msp{{ $hostIndex }}/
+          name: peer-msp{{ $hostIndex }}
+        {{- end }} {{- /* org.Specs */ -}}{{""}}
+        env:
+        # TODO move configurable ones to configmaps
+        - name: HLF_KUBE_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['statefulset.kubernetes.io/pod-name']
+        - name: HLF_PEER_ORG_DOMAIN
+          value: {{ $org.Domain }}
+        - name: CORE_PEER_NETWORKID
+          value: {{ $.Values.hlfNetworkId }}
+        - name: CORE_PEER_LISTENADDRESS
+          value: 0.0.0.0:443
+        - name: CORE_PEER_CHAINCODELISTENADDRESS
+          value: 0.0.0.0:7052
+        - name: CORE_PEER_GOSSIP_BOOTSTRAP
+          value: >-
+          {{- range $i, $host := $org.Specs }}
+          {{- $peerGossipAddress :=  printf "%s.%s:443" $host.Hostname $org.Domain }}
+              {{ $peerGossipAddress }}
+          {{- end }} {{- /* Peers */ -}}{{""}}
+        - name: CORE_PEER_LOCALMSPID
+          value: {{ $org.Name }}MSP
+        - name: CORE_VM_ENDPOINT
+          value: unix:///host/var/run/docker.sock
+        - name: FABRIC_LOGGING_SPEC
+          value: {{ $.Values.peer.logLevel }}
+        - name: CORE_PEER_TLS_ENABLED
+          value: {{ $.Values.tlsEnabled | quote }}
+        - name: CORE_PEER_TLS_CLIENTAUTHREQUIRED
+          value: "false"
+        - name: CORE_PEER_GOSSIP_USELEADERELECTION
+          value: "true"
+        - name: CORE_PEER_GOSSIP_ORGLEADER
+          value: "false"
+        - name: CORE_PEER_ADDRESSAUTODETECT
+          value: "true" # looks like absolutely necessary, o/w chaincode instantiate fails, no clue why
+        - name: CORE_OPERATIONS_LISTENADDRESS
+          value: 0.0.0.0:8443
+        - name: CORE_CHAINCODE_LOGGING_LEVEL
+          value: {{ $.Values.peer.chaincode.logging.level }}
+        - name: CORE_CHAINCODE_LOGGING_SHIM
+          value: {{ $.Values.peer.chaincode.logging.shim }}
+        - name: CORE_LEDGER_STATE_STATEDATABASE
+          value: CouchDB
+        - name: CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS
+          value: localhost:5984
+        - name: CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME
+          value: {{ $.Values.couchdb.userName | quote }}
+        - name: CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+          value: {{ $.Values.couchdb.password | quote }}
+        - name: HFC_LOGGING
+          value: '{"info":"console"}'
+        - name: GRPC_VERBOSITY
+          value: DEBUG
+        - name: GRPC_TRACE
+          value:  all
+
+      # CouchDB container
+      - name: couchdb
+        image: hyperledger/fabric-couchdb:{{ $.Values.couchdb.version }}
+        volumeMounts:
+        - mountPath: /opt/couchdb/data/
+          name: couchdb-data
+        env:
+        - name: COUCHDB_USER
+          value: {{ $.Values.couchdb.userName | quote }}
+        - name: COUCHDB_PASSWORD
+          value: {{ $.Values.couchdb.password | quote }}
+---
+{{- end }} {{- /* Orgs */ -}}
