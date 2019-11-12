@@ -12,7 +12,7 @@ hlfLoadBalancePeerNodes: false
 
 # common persistence settings
 persistence:
-  storageClass: standard
+  storageClass: ssd
 
 # peer settings. applies to all peers
 peer:
