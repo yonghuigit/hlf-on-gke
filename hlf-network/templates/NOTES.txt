@@ -12,6 +12,9 @@ cat kube-common/kube-dns-configmap-update.yaml
 # Then
 kubectl apply -f kube-common/kube-dns-configmap-update.yaml
 
+# Get the reserved static IP
+gcloud compute addresses describe hlf-load-balancer-static-ip --global --format='value(address)'
+
 # In your domain DNS management tool, make sure to point following domains to the static ip
 {{- range $i, $org := $.Values.OrdererOrgs }}
 {{ $org.Domain | lower }}
