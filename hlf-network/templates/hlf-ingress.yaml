@@ -32,18 +32,10 @@ spec:
         backend:
           serviceName: {{ $org.Name | lower }}-cluster-nodeport
           servicePort: 443
-  {{- range $i, $host := $org.Specs }}
-  - host: {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
-    http:
-      paths:
-      - path: /*
-        backend:
-          serviceName: {{ $org.Name | lower }}-{{ $host.Hostname | lower }}-cluster-nodeport
-          servicePort: 443
-  {{- end }} {{- /* org.Specs */ -}}
   {{- end }} {{- /* OrdererOrgs */ -}}
 
   {{- range $i, $org := $.Values.PeerOrgs }}
+  {{- if $.Values.hlfLoadBalancePeerNodes }}
   - host: peer.{{ $org.Domain | lower }}
     http:
       paths:
@@ -51,6 +43,7 @@ spec:
         backend:
           serviceName: {{ $org.Name | lower }}-cluster-nodeport
           servicePort: 443
+  {{- end }}
   {{- range $i, $host := $org.Specs }}
   - host: {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
     http:

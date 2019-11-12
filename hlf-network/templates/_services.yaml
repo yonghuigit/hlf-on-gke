@@ -4,6 +4,9 @@
 {{- $org := .currOrg}}
 {{- $hlfNodeType := .currHlfNodeType}}
 {{- $ := .global}}
+{{- $exponseOrgLevelService := or (eq $hlfNodeType "orderer") $.Values.hlfLoadBalancePeerNodes }}
+{{- $exponseNodeLevelService := eq $hlfNodeType "peer" }}
+
 ---
 apiVersion: v1
 kind: Service
@@ -19,6 +22,7 @@ spec:
     org: {{ $org.Name }}
 ---
 
+{{- if $exponseOrgLevelService }}
 ---
 apiVersion: v1
 kind: Service
@@ -41,8 +45,10 @@ spec:
     app: {{ $hlfNodeType }}Pod
     org: {{ $org.Name }}
 ---
+{{- end }} {{- /* if */ -}}
 
 {{- range $i, $host := $org.Specs }}
+{{- if $exponseNodeLevelService }}
 ---
 apiVersion: v1
 kind: Service
@@ -66,6 +72,7 @@ spec:
     org: {{ $org.Name }}
     statefulset.kubernetes.io/pod-name: {{ $org.Name | lower }}{{ $host.Hostname | lower }}
 ---
+{{- end }} {{- /* if */ -}}
 {{- end }} {{- /* org.Specs */ -}}{{""}}
 
 {{- end }}
