@@ -7,6 +7,8 @@ tlsEnabled: true
 hlfNetworkNamespace: gke-hlf-ns
 hlfNetworkId: test
 hlfKubeDNSSvcIP: 10.0.0.10
+hlfLBStaticIP:
+hlfLoadBalancePeerNodes: false
 
 # common persistence settings
 persistence:

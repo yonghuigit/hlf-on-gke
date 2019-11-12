@@ -12,27 +12,18 @@ cat kube-common/kube-dns-configmap-update.yaml
 # Then
 kubectl apply -f kube-common/kube-dns-configmap-update.yaml
 
-# Register a static ip
-gcloud compute addresses create hlf-load-balancer-static-ip --global
-gcloud compute addresses describe hlf-load-balancer-static-ip --global --format='value(address)'
-
 # In your domain DNS management tool, make sure to point following domains to the static ip
 {{- range $i, $org := $.Values.OrdererOrgs }}
 {{ $org.Domain | lower }}
 {{- end }} {{- /* OrdererOrgs */ -}}{{""}}
 
 {{- range $i, $org := $.Values.PeerOrgs }}
+{{- if $.Values.hlfLoadBalancePeerNodes }}
 peer.{{ $org.Domain | lower }}
+{{- end }}
 {{- range $i, $host := $org.Specs }}
 {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
 {{- end }} {{- /* org.Specs */ -}}
 {{- end }} {{- /* PeerOrgs */ -}}{{""}}
 
-# Wait for the load balancer to show up. This might take 5 to 10 minutes.
-# Click on the load balancer and go to its details.
-# Click on Edit to manually add a frontend configuration.
-# Choose HTTPS (includes HTTP/2) as protocol
-# In IP address, select the reserved static ip hlf-load-balancer-static-ip
-# In Certificate dropdown, select the certificates. Add Additional certificates to select other ones.
-# Remember to click on Update in the left pane to commit the change.
-# It might take 15 minutes for the frontend to show up and the certificates to be provisioned and become active (Green)
+# Wait for the load balancer to show up and the certificates to be provisioned. This might take 15 minutes.

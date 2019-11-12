@@ -3,7 +3,9 @@
 {{- $noop := printf "hlf-cert-%s"  $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
 {{- end -}}
 {{- range $i, $org := $.Values.PeerOrgs }}
+{{- if $.Values.hlfLoadBalancePeerNodes }}
 {{- $noop := printf "hlf-cert-%s" $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
+{{- end -}}
 {{- range $i, $host := $org.Specs }}
 {{- $noop := printf "hlf-cert-%s-%s" $org.Name $host.Hostname | lower  | append $mc.certs | set $mc "certs" -}}
 {{- end -}}
@@ -15,7 +17,7 @@ metadata:
   name: hlf-ingress
   namespace: {{ $.Values.hlfNetworkNamespace }}
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: hlf-load-balancer-static-ip
+    kubernetes.io/ingress.global-static-ip-name: {{ $.Values.hlfLBStaticIP }}
     networking.gke.io/managed-certificates: {{- " " -}}{{- join "," $mc.certs -}}{{""}}
   labels:
     purpose: hlf-network-ingress-for-lb

@@ -25,7 +25,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/msp
+        MSPDir: crypto-config/ordererOrganizations/orderer.getsafefood.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -49,7 +49,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org1MSP
 
-        MSPDir: crypto-config/peerOrganizations/ibcorg1.itradenetwork.net/msp
+        MSPDir: crypto-config/peerOrganizations/org1.getsafefood.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -70,11 +70,11 @@ Organizations:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer-0.ibcorg1.itradenetwork.net
+            - Host: peer-0.org1.getsafefood.com
               Port: 443
-            - Host: peer-1.ibcorg1.itradenetwork.net
+            - Host: peer-1.org1.getsafefood.com
               Port: 443
-            - Host: peer-2.ibcorg1.itradenetwork.net
+            - Host: peer-2.org1.getsafefood.com
               Port: 443
 
     - &Org2
@@ -85,7 +85,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org2MSP
 
-        MSPDir: crypto-config/peerOrganizations/ibcorg2.itradenetwork.net/msp
+        MSPDir: crypto-config/peerOrganizations/org2.getsafefood.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -105,11 +105,11 @@ Organizations:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer-0.ibcorg2.itradenetwork.net
+            - Host: peer-0.org2.getsafefood.com
               Port: 443
-            - Host: peer-1.ibcorg2.itradenetwork.net
+            - Host: peer-1.org2.getsafefood.com
               Port: 443
-            - Host: peer-2.ibcorg2.itradenetwork.net
+            - Host: peer-2.org2.getsafefood.com
               Port: 443
 
 ################################################################################
@@ -228,7 +228,7 @@ Orderer: &OrdererDefaults
     OrdererType: solo
 
     Addresses:
-        - ord-0.ibcorderer.itradenetwork.net:443
+        - ord-0.orderer.getsafefood.com:443
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -352,7 +352,7 @@ Profiles:
             OrdererType: kafka
             Kafka:
                 Brokers:
-                - kafka.ibcorderer.itradenetwork.net:9092
+                - kafka.orderer.getsafefood.com:9092
 
             Organizations:
             - *OrdererOrg
@@ -377,22 +377,22 @@ Profiles:
             OrdererType: etcdraft
             EtcdRaft:
                 Consenters:
-                - Host: ord-0.ibcorderer.itradenetwork.net
+                - Host: ord-0.orderer.getsafefood.com
                   Port: 443
-                  ClientTLSCert: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/orderers/ord-0.ibcorderer.itradenetwork.net/tls/server.crt
-                  ServerTLSCert: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/orderers/ord-0.ibcorderer.itradenetwork.net/tls/server.crt
-                - Host: ord-1.ibcorderer.itradenetwork.net
+                  ClientTLSCert: crypto-config/ordererOrganizations/orderer.getsafefood.com/orderers/ord-0.orderer.getsafefood.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/orderer.getsafefood.com/orderers/ord-0.orderer.getsafefood.com/tls/server.crt
+                - Host: ord-1.orderer.getsafefood.com
                   Port: 443
-                  ClientTLSCert: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/orderers/ord-1.ibcorderer.itradenetwork.net/tls/server.crt
-                  ServerTLSCert: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/orderers/ord-1.ibcorderer.itradenetwork.net/tls/server.crt
-                - Host: ord-2.ibcorderer.itradenetwork.net
+                  ClientTLSCert: crypto-config/ordererOrganizations/orderer.getsafefood.com/orderers/ord-1.orderer.getsafefood.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/orderer.getsafefood.com/orderers/ord-1.orderer.getsafefood.com/tls/server.crt
+                - Host: ord-2.orderer.getsafefood.com
                   Port: 443
-                  ClientTLSCert: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/orderers/ord-2.ibcorderer.itradenetwork.net/tls/server.crt
-                  ServerTLSCert: crypto-config/ordererOrganizations/ibcorderer.itradenetwork.net/orderers/ord-2.ibcorderer.itradenetwork.net/tls/server.crt
+                  ClientTLSCert: crypto-config/ordererOrganizations/orderer.getsafefood.com/orderers/ord-2.orderer.getsafefood.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/orderer.getsafefood.com/orderers/ord-2.orderer.getsafefood.com/tls/server.crt
             Addresses:
-                - ord-0.ibcorderer.itradenetwork.net:443
-                - ord-1.ibcorderer.itradenetwork.net:443
-                - ord-2.ibcorderer.itradenetwork.net:443
+                - ord-0.orderer.getsafefood.com:443
+                - ord-1.orderer.getsafefood.com:443
+                - ord-2.orderer.getsafefood.com:443
 
             Organizations:
             - *OrdererOrg
