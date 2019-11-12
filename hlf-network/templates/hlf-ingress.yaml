@@ -17,6 +17,7 @@ metadata:
   name: hlf-ingress
   namespace: {{ $.Values.hlfNetworkNamespace }}
   annotations:
+    kubernetes.io/ingress.allow-http: "false"
     kubernetes.io/ingress.global-static-ip-name: {{ $.Values.hlfLBStaticIPName }}
     networking.gke.io/managed-certificates: {{- " " -}}{{- join "," $mc.certs -}}{{""}}
   labels:
