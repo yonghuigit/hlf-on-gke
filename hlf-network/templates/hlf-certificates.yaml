@@ -4,6 +4,7 @@ apiVersion: networking.gke.io/v1beta1
 kind: ManagedCertificate
 metadata:
   name: hlf-cert-{{ $org.Name | lower }}
+  namespace: {{ $.Values.hlfNetworkNamespace }}
 spec:
   domains:
     - {{ $org.Domain | lower }}
@@ -16,6 +17,7 @@ apiVersion: networking.gke.io/v1beta1
 kind: ManagedCertificate
 metadata:
   name: hlf-cert-{{ $org.Name | lower }}
+  namespace: {{ $.Values.hlfNetworkNamespace }}
 spec:
   domains:
     - peer.{{ $org.Domain | lower }}
@@ -26,6 +28,7 @@ apiVersion: networking.gke.io/v1beta1
 kind: ManagedCertificate
 metadata:
   name: hlf-cert-{{ $org.Name | lower }}-{{ $host.Hostname | lower }}
+  namespace: {{ $.Values.hlfNetworkNamespace }}
 spec:
   domains:
     - {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}

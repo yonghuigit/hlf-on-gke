@@ -1,10 +1,22 @@
+{{- $mc := dict "certs" (list) -}}
+{{- range $i, $org := $.Values.OrdererOrgs }}
+{{- $noop := printf "hlf-cert-%s"  $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
+{{- end -}}
+{{- range $i, $org := $.Values.PeerOrgs }}
+{{- $noop := printf "hlf-cert-%s" $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
+{{- range $i, $host := $org.Specs }}
+{{- $noop := printf "hlf-cert-%s-%s" $org.Name $host.Hostname | lower  | append $mc.certs | set $mc "certs" -}}
+{{- end -}}
+{{- end -}}
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: hlf-ingress
-  namespace: {{ $.Values.hlfNetworkNamespace }}  
+  namespace: {{ $.Values.hlfNetworkNamespace }}
   annotations:
-    kubernetes.io/ingress.allow-http: "false"
+    kubernetes.io/ingress.global-static-ip-name: hlf-load-balancer-static-ip
+    networking.gke.io/managed-certificates: {{- " " -}}{{- join "," $mc.certs -}}{{""}}
   labels:
     purpose: hlf-network-ingress-for-lb
 spec:
