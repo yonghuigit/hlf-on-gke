@@ -27,6 +27,9 @@ metadata:
   namespace: {{ $.Values.hlfNetworkNamespace }}  
   labels:
     purpose: ca-cluster-nodeport-for-load-balancer
+  annotations:
+    cloud.google.com/app-protocols: '{"my-https-port":"HTTPS"}'
+    service.alpha.kubernetes.io/app-protocols: '{"my-https-port":"HTTPS"}'
 spec:
   type: NodePort
   selector:
@@ -37,7 +40,7 @@ spec:
   - protocol: TCP
     port: 443
     targetPort: 7054
-    name: https
+    name: my-https-port
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -77,7 +80,26 @@ spec:
             --ca.certfile /etc/hyperledger/fabric-ca-server-config/cert.pem \
             --ca.keyfile /etc/hyperledger/fabric-ca-server-config/private_key \
             -b {{ $.Values.ca.userName }}:{{ $.Values.ca.password }} -d"]
-
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /cainfo
+            port: 7054
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /cainfo
+            port: 7054
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 3     
         volumeMounts:
         - mountPath: /etc/hyperledger/fabric-ca-server-config/
           name: ca-tls
@@ -98,7 +120,7 @@ spec:
         - name: FABRIC_CA_SERVER_TLS_KEYFILE
           value: /etc/hyperledger/fabric-ca-server-config/private_key
         - name: FABRIC_CA_SERVER_PORT
-          value: 7054
+          value: "7054"
 ---
 {{- end }} {{- /* Orgs */ -}}
 {{- end }} {{- /* if */ -}}
