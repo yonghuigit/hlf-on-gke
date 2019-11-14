@@ -3,6 +3,9 @@
 {{- $noop := printf "hlf-cert-%s"  $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
 {{- end -}}
 {{- range $i, $org := $.Values.PeerOrgs }}
+{{- if $.Values.hlfCAEnabled }}
+{{- $noop := printf "hlf-cert-%s-ca" $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
+{{- end -}}
 {{- if $.Values.hlfLoadBalancePeerNodes }}
 {{- $noop := printf "hlf-cert-%s" $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
 {{- end -}}
@@ -33,8 +36,16 @@ spec:
           serviceName: {{ $org.Name | lower }}-cluster-nodeport
           servicePort: 443
   {{- end }} {{- /* OrdererOrgs */ -}}
-
-  {{- range $i, $org := $.Values.PeerOrgs }}
+  {{- range $i, $org := $.Values.PeerOrgs }} 
+  {{- if $.Values.hlfCAEnabled }}
+  - host: ca.{{ $org.Domain | lower }}
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ $org.Name | lower }}-ca-cluster-nodeport
+          servicePort: 443
+  {{- end }}
   {{- if $.Values.hlfLoadBalancePeerNodes }}
   - host: peer.{{ $org.Domain | lower }}
     http:

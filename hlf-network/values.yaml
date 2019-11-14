@@ -6,9 +6,10 @@ coreDNSVersion: 1.6.4
 tlsEnabled: true
 hlfNetworkNamespace: gke-hlf-ns
 hlfNetworkId: test
+hlfCAEnabled: true
 hlfKubeDNSSvcIP: 10.0.0.10
 hlfLBStaticIPName: hlf-load-balancer-static-ip
-hlfLoadBalancePeerNodes: false
+hlfLoadBalancePeerNodes: true
 
 # common persistence settings
 persistence:

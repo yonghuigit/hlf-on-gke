@@ -1,9 +1,9 @@
 {{/* Service Template for Orderer/Peer Nodes. Expect currOrg, currHlfNodeType and global to be passed in */}}
 {{- define "hlf-network.services" }}
 
-{{- $org := .currOrg}}
-{{- $hlfNodeType := .currHlfNodeType}}
-{{- $ := .global}}
+{{- $org := .currOrg }}
+{{- $hlfNodeType := .currHlfNodeType }}
+{{- $ := .global }}
 {{- $exponseOrgLevelService := or (eq $hlfNodeType "orderer") $.Values.hlfLoadBalancePeerNodes }}
 {{- $exponseNodeLevelService := eq $hlfNodeType "peer" }}
 

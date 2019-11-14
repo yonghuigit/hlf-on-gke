@@ -1,0 +1,104 @@
+{{- if $.Values.hlfCAEnabled }}
+
+{{- range $i, $org := .Values.PeerOrgs }}
+{{- $commonName := printf "ca.%s" $org.Domain }}
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: hlf-ca--{{ $org.Name | lower }}-tls
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+  labels:
+    orgName: {{ $org.Name }}
+    commonName: {{ $commonName }}  
+data:
+  cert.pem: |-
+      {{ $.Files.Get (printf "crypto-config/peerOrganizations/%s/ca/ca.%s-cert.pem" $org.Domain $org.Domain ) | b64enc }}
+  {{- range $path, $bytes := $.Files.Glob (printf "crypto-config/peerOrganizations/%s/ca/*_sk" $org.Domain ) }}
+  private_key: |-
+      {{ $.Files.Get $path | b64enc }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $org.Name | lower }}-ca-cluster-nodeport
+  namespace: {{ $.Values.hlfNetworkNamespace }}  
+  labels:
+    purpose: ca-cluster-nodeport-for-load-balancer
+spec:
+  type: NodePort
+  selector:
+    app: caPod
+    org: {{ $org.Name }}
+    statefulset.kubernetes.io/pod-name: {{ $org.Name | lower }}ca-0  
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 7054
+    name: https
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $org.Name | lower }}ca
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caPod
+      org: {{ $org.Name }}
+  volumeClaimTemplates:
+  - metadata:
+      name: ca-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: {{ $.Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ $.Values.ca.persistence.size }}
+  template:
+    metadata:
+      labels:
+        app: caPod
+        org: {{ $org.Name }}
+    spec:
+      volumes:
+      - name: ca-tls
+        secret:
+          secretName: hlf-ca--{{ $org.Name | lower }}-tls
+      containers:
+      - name: ca
+        image: hyperledger/fabric-ca:{{ $.Values.hyperledgerVersion }}
+        command: ["sh", "-c", "fabric-ca-server start \
+            --ca.certfile /etc/hyperledger/fabric-ca-server-config/cert.pem \
+            --ca.keyfile /etc/hyperledger/fabric-ca-server-config/private_key \
+            -b {{ $.Values.ca.userName }}:{{ $.Values.ca.password }} -d"]
+
+        volumeMounts:
+        - mountPath: /etc/hyperledger/fabric-ca-server-config/
+          name: ca-tls
+        - mountPath: /var/hyperledger/fabric-ca-server
+          name: ca-data          
+        env:
+        # TODO move configurable ones to configmaps
+        - name: FABRIC_LOGGING_SPEC
+          value: {{ $.Values.ca.logLevel }}
+        - name: FABRIC_CA_HOME
+          value: /var/hyperledger/fabric-ca-server
+        - name: FABRIC_CA_SERVER_CA_NAME
+          value: ca-{{ $org.Name }}
+        - name: FABRIC_CA_SERVER_TLS_ENABLED
+          value: "true" 
+        - name: FABRIC_CA_SERVER_TLS_CERTFILE
+          value: /etc/hyperledger/fabric-ca-server-config/cert.pem
+        - name: FABRIC_CA_SERVER_TLS_KEYFILE
+          value: /etc/hyperledger/fabric-ca-server-config/private_key
+        - name: FABRIC_CA_SERVER_PORT
+          value: 7054
+---
+{{- end }} {{- /* Orgs */ -}}
+{{- end }} {{- /* if */ -}}

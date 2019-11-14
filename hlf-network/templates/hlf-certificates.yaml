@@ -12,6 +12,20 @@ spec:
 {{- end }} {{- /* OrdererOrgs */ -}}{{""}}
 
 {{- range $i, $org := $.Values.PeerOrgs }}
+
+{{- if $.Values.hlfCAEnabled }}
+---
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: hlf-cert-{{ $org.Name | lower }}-ca
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+spec:
+  domains:
+    - ca.{{ $org.Domain | lower }}
+---
+{{- end }}
+
 {{- if $.Values.hlfLoadBalancePeerNodes }}
 ---
 apiVersion: networking.gke.io/v1beta1
