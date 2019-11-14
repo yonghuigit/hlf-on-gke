@@ -80,6 +80,10 @@ spec:
             --ca.certfile /etc/hyperledger/fabric-ca-server-config/cert.pem \
             --ca.keyfile /etc/hyperledger/fabric-ca-server-config/private_key \
             -b {{ $.Values.ca.userName }}:{{ $.Values.ca.password }} -d"]
+        ports:
+            - name: ca-port
+              containerPort: 7054
+              protocol: TCP        
         livenessProbe:
           failureThreshold: 3
           httpGet:
