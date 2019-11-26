@@ -34,7 +34,7 @@ metadata:
   annotations:
     cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
     service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2"}'
-    beta.cloud.google.com/backend-config: '{"ports": {"443":"grpc-backendconfig"}}'    
+    beta.cloud.google.com/backend-config: '{"ports": {"grpc":"grpc-backendconfig"}}'    
 spec:
   type: NodePort
   ports:
@@ -61,7 +61,7 @@ metadata:
   annotations:
     cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
     service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2"}'
-    beta.cloud.google.com/backend-config: '{"ports": {"443":"grpc-backendconfig"}}'
+    beta.cloud.google.com/backend-config: '{"ports": {"grpc":"grpc-backendconfig"}}'
 spec:
   type: NodePort
   ports:
