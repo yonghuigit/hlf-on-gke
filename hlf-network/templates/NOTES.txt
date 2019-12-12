@@ -29,4 +29,10 @@ peer.{{ $org.Domain | lower }}
 {{- end }} {{- /* org.Specs */ -}}
 {{- end }} {{- /* PeerOrgs */ -}}{{""}}
 
+{{- if $.Values.hlfCAEnabled }}
+{{- range $i, $org := .Values.PeerOrgs }}
+ca.{{ $org.Domain | lower }}
+{{- end }} {{- /* PeerOrgs */ -}}{{""}}
+{{- end }}
+
 # Wait for the load balancer to show up and the certificates to be provisioned. This might take 15 minutes.
