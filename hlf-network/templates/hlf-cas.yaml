@@ -46,6 +46,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ $org.Name | lower }}ca
+  serviceName: {{ $org.Name | lower }}-ca-cluster-nodeport
   namespace: {{ $.Values.hlfNetworkNamespace }}
 spec:
   replicas: 1

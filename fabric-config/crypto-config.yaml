@@ -11,7 +11,7 @@ OrdererOrgs:
   # Orderer
   # ---------------------------------------------------------------------------
   - Name: Orderer
-    Domain: orderer.getsafefood.com
+    Domain: _ORDERER_ORG_DOMAIN_
     # ---------------------------------------------------------------------------
     # "Specs" - See PeerOrgs below for complete description
     # ---------------------------------------------------------------------------
@@ -28,7 +28,7 @@ PeerOrgs:
   # Org1
   # ---------------------------------------------------------------------------
   - Name: Org1
-    Domain: org1.getsafefood.com
+    Domain: _ORG1_DOMAIN_
     EnableNodeOUs: true
     # ---------------------------------------------------------------------------
     # "Specs"
@@ -77,7 +77,7 @@ PeerOrgs:
   # Org2: See "Org1" for full specification
   # ---------------------------------------------------------------------------
   - Name: Org2
-    Domain: org2.getsafefood.com
+    Domain: _ORG2_DOMAIN_
     EnableNodeOUs: true
     Specs:
       - Hostname: peer-0

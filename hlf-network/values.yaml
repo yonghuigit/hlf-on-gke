@@ -1,7 +1,7 @@
 # Default values for hlf-kube.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-hyperledgerVersion: 1.4.3
+hyperledgerVersion: 1.4.4
 coreDNSVersion: 1.6.4
 tlsEnabled: true
 hlfNetworkNamespace: gke-hlf-ns
@@ -23,7 +23,7 @@ peer:
       level:  info
       shim:   info
   persistence:
-    size: 16Gi
+    size: 30Gi
   operations:
     enabled: true
     metrics:
@@ -35,14 +35,14 @@ couchdb:
   userName: peercouchuser
   password: peercouchpass
   persistence:
-    size: 16Gi
+    size: 30Gi
 
 # Orderer settings. applies to all Orderer pods
 orderer:
   # should be greater than 1 only if kafka orderer is used
   logLevel: info
   persistence:
-    size: 16Gi
+    size: 30Gi
 
 # CA (Certificate Authority) settings. applies to all CA's
 ca:
@@ -51,4 +51,4 @@ ca:
   logLevel: info
   # TODO storage classs?
   persistence:
-    size: 16Gi
+    size: 4Gi
