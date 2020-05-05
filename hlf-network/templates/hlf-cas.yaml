@@ -76,7 +76,7 @@ spec:
           secretName: hlf-ca--{{ $org.Name | lower }}-tls
       containers:
       - name: ca
-        image: hyperledger/fabric-ca:{{ $.Values.hyperledgerVersion }}
+        image: hyperledger/fabric-ca:{{ $.Values.fabricCAVersion }}
         command: ["sh", "-c", "fabric-ca-server start \
             --ca.certfile /etc/hyperledger/fabric-ca-server-config/cert.pem \
             --ca.keyfile /etc/hyperledger/fabric-ca-server-config/private_key \

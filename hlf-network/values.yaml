@@ -1,19 +1,20 @@
 # Default values for hlf-kube.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-hyperledgerVersion: 1.4.4
+hyperledgerVersion: 2.0.0
 coreDNSVersion: 1.6.4
 tlsEnabled: true
 hlfNetworkNamespace: gke-hlf-ns
 hlfNetworkId: test
 hlfCAEnabled: true
+fabricCAVersion: 1.4.6
 hlfKubeDNSSvcIP: 10.0.0.10
 hlfLBStaticIPName: hlf-load-balancer-static-ip
 hlfLoadBalancePeerNodes: true
 
 # common persistence settings
 persistence:
-  storageClass: ssd
+  storageClass: standard
 
 # peer settings. applies to all peers
 peer:
@@ -31,7 +32,7 @@ peer:
 
 # CouchDB settings. applies to all CouchDB's
 couchdb:
-  version: 0.4.15
+  version: 2.3
   userName: peercouchuser
   password: thi3I3couch
   persistence:
