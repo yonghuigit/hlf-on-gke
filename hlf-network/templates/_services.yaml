@@ -4,8 +4,8 @@
 {{- $org := .currOrg }}
 {{- $hlfNodeType := .currHlfNodeType }}
 {{- $ := .global }}
-{{- $exponseOrgLevelService := or (eq $hlfNodeType "orderer") $.Values.hlfLoadBalancePeerNodes }}
-{{- $exponseNodeLevelService := eq $hlfNodeType "peer" }}
+{{- $exposeOrgLevelService := or (eq $hlfNodeType "orderer") $.Values.hlfLoadBalancePeerNodes }}
+{{- $exposeNodeLevelService := eq $hlfNodeType "peer" }}
 
 ---
 apiVersion: v1
@@ -22,7 +22,7 @@ spec:
     org: {{ $org.Name }}
 ---
 
-{{- if $exponseOrgLevelService }}
+{{- if $exposeOrgLevelService }}
 ---
 apiVersion: v1
 kind: Service
@@ -32,8 +32,8 @@ metadata:
   labels:
     purpose: org-level-cluster-nodeport-for-load-balancer
   annotations:
-    cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
-    service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2"}'
+    cloud.google.com/app-protocols: '{"grpc":"HTTP2", "health": "HTTP"}'
+    service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2", "health": "HTTP"}'
     beta.cloud.google.com/backend-config: '{"ports": {"grpc":"grpc-backendconfig"}}'    
 spec:
   type: NodePort
@@ -42,6 +42,10 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 443
+  - name: health
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
   selector:
     app: {{ $hlfNodeType }}Pod
     org: {{ $org.Name }}
@@ -49,7 +53,7 @@ spec:
 {{- end }} {{- /* if */ -}}
 
 {{- range $i, $host := $org.Specs }}
-{{- if $exponseNodeLevelService }}
+{{- if $exposeNodeLevelService }}
 ---
 apiVersion: v1
 kind: Service
@@ -59,9 +63,10 @@ metadata:
   labels:
     purpose: node-level-cluster-nodeport-for-load-balancer
   annotations:
-    cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
-    service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2"}'
+    cloud.google.com/app-protocols: '{"grpc":"HTTP2", "health": "HTTP"}'
+    service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2", "health": "HTTP"}'
     beta.cloud.google.com/backend-config: '{"ports": {"grpc":"grpc-backendconfig"}}'
+    cloud.google.com/neg: '{"ingress": true}'    
 spec:
   type: NodePort
   ports:
@@ -69,6 +74,10 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 443
+  - name: health
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
   selector:
     app: {{ $hlfNodeType }}Pod
     org: {{ $org.Name }}

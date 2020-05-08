@@ -1,16 +1,16 @@
 # Default values for hlf-kube.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-hyperledgerVersion: 2.0.0
+hyperledgerVersion: 2.1.0
 coreDNSVersion: 1.6.4
 tlsEnabled: true
 hlfNetworkNamespace: gke-hlf-ns
 hlfNetworkId: test
-hlfCAEnabled: true
+hlfCAEnabled: false
 fabricCAVersion: 1.4.6
 hlfKubeDNSSvcIP: 10.0.0.10
 hlfLBStaticIPName: hlf-load-balancer-static-ip
-hlfLoadBalancePeerNodes: true
+hlfLoadBalancePeerNodes: false
 
 # common persistence settings
 persistence:

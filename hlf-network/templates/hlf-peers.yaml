@@ -101,6 +101,11 @@ spec:
             echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Done setting env@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
             peer node start
 
+        ports:
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 8443
+          protocol: TCP
         livenessProbe:
           failureThreshold: 3
           httpGet:
