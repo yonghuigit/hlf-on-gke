@@ -4,8 +4,8 @@
 {{- $org := .currOrg }}
 {{- $hlfNodeType := .currHlfNodeType }}
 {{- $ := .global }}
-{{- $exposeOrgLevelService := or (eq $hlfNodeType "orderer") $.Values.hlfLoadBalancePeerNodes }}
-{{- $exposeNodeLevelService := eq $hlfNodeType "peer" }}
+{{- $exposeOrgLevelService := $.Values.hlfLoadBalancePeerNodes }}
+{{- $exposeNodeLevelService := or (eq $hlfNodeType "orderer") (eq $hlfNodeType "peer") }}
 
 ---
 apiVersion: v1
@@ -66,7 +66,6 @@ metadata:
     cloud.google.com/app-protocols: '{"grpc":"HTTP2", "health": "HTTP"}'
     service.alpha.kubernetes.io/app-protocols: '{"grpc":"HTTP2", "health": "HTTP"}'
     beta.cloud.google.com/backend-config: '{"ports": {"grpc":"grpc-backendconfig"}}'
-    cloud.google.com/neg: '{"ingress": true}'    
 spec:
   type: NodePort
   ports:

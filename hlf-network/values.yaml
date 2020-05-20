@@ -6,11 +6,13 @@ coreDNSVersion: 1.6.4
 tlsEnabled: true
 hlfNetworkNamespace: gke-hlf-ns
 hlfNetworkId: test
-hlfCAEnabled: false
+hlfCAEnabled: true
 fabricCAVersion: 1.4.6
 hlfKubeDNSSvcIP: 10.0.0.10
 hlfLBStaticIPName: hlf-load-balancer-static-ip
-hlfLoadBalancePeerNodes: false
+hlfLoadBalancePeerNodes: true
+hlfSetupIngress: false
+hlfCreateSSLCerts: false
 
 # common persistence settings
 persistence:

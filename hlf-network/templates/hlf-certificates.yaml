@@ -1,4 +1,6 @@
+{{- if $.Values.hlfCreateSSLCerts }}
 {{- range $i, $org := $.Values.OrdererOrgs }}
+{{- if $.Values.hlfLoadBalancePeerNodes }}
 ---
 apiVersion: networking.gke.io/v1beta1
 kind: ManagedCertificate
@@ -9,7 +11,21 @@ spec:
   domains:
     - {{ $org.Domain | lower }}
 ---
+{{- end }}
+{{- range $i, $host := $org.Specs }}
+---
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: hlf-cert-{{ $org.Name | lower }}-{{ $host.Hostname | lower }}
+  namespace: {{ $.Values.hlfNetworkNamespace }}
+spec:
+  domains:
+    - {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
+---
+{{- end }} {{- /* org.Specs */ -}}
 {{- end }} {{- /* OrdererOrgs */ -}}{{""}}
+
 
 {{- range $i, $org := $.Values.PeerOrgs }}
 
@@ -51,3 +67,4 @@ spec:
 ---
 {{- end }} {{- /* org.Specs */ -}}
 {{- end }} {{- /* PeerOrgs */ -}}{{""}}
+{{- end }} {{- /* $.Values.hlfCreateSSLCerts */ -}}

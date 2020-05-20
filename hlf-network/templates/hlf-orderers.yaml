@@ -132,6 +132,8 @@ spec:
           value: "443"
         - name: ORDERER_OPERATIONS_LISTENADDRESS
           value: 0.0.0.0:8443
+        - name: ORDERER_METRICS_PROVIDER
+          value: {{ $.Values.peer.operations.metrics.provider }}
         - name: ORDERER_GENERAL_GENESISMETHOD
           value: file
         - name: ORDERER_GENERAL_GENESISFILE

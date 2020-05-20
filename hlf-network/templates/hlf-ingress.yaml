@@ -1,7 +1,14 @@
+{{- if $.Values.hlfSetupIngress }}
 {{- $mc := dict "certs" (list) -}}
 {{- range $i, $org := $.Values.OrdererOrgs }}
+{{- if $.Values.hlfLoadBalancePeerNodes }}
 {{- $noop := printf "hlf-cert-%s"  $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
 {{- end -}}
+{{- range $i, $host := $org.Specs }}
+{{- $noop := printf "hlf-cert-%s-%s" $org.Name $host.Hostname | lower  | append $mc.certs | set $mc "certs" -}}
+{{- end -}}
+{{- end -}}
+
 {{- range $i, $org := $.Values.PeerOrgs }}
 {{- if $.Values.hlfCAEnabled }}
 {{- $noop := printf "hlf-cert-%s-ca" $org.Name | lower  | append $mc.certs | set $mc "certs" -}}
@@ -28,6 +35,7 @@ metadata:
 spec:
   rules:
   {{- range $i, $org := $.Values.OrdererOrgs }}
+  {{- if $.Values.hlfLoadBalancePeerNodes }}
   - host: {{ $org.Domain | lower }}
     http:
       paths:
@@ -39,7 +47,22 @@ spec:
         backend:
           serviceName: {{ $org.Name | lower }}-cluster-nodeport
           servicePort: 443
+  {{- end }}
+  {{- range $i, $host := $org.Specs }}
+  - host: {{ $host.Hostname | lower }}.{{ $org.Domain | lower }}
+    http:
+      paths:
+      - path: /healthz
+        backend:
+          serviceName: {{ $org.Name | lower }}-{{ $host.Hostname | lower }}-cluster-nodeport
+          servicePort: 8443
+      - path: /*
+        backend:
+          serviceName: {{ $org.Name | lower }}-{{ $host.Hostname | lower }}-cluster-nodeport
+          servicePort: 443
+  {{- end }} {{- /* org.Specs */ -}}
   {{- end }} {{- /* OrdererOrgs */ -}}
+
   {{- range $i, $org := $.Values.PeerOrgs }} 
   {{- if $.Values.hlfCAEnabled }}
   - host: ca.{{ $org.Domain | lower }}
@@ -50,6 +73,7 @@ spec:
           serviceName: {{ $org.Name | lower }}-ca-cluster-nodeport
           servicePort: 443
   {{- end }}
+
   {{- if $.Values.hlfLoadBalancePeerNodes }}
   - host: peer.{{ $org.Domain | lower }}
     http:
@@ -77,3 +101,4 @@ spec:
           servicePort: 443
   {{- end }} {{- /* org.Specs */ -}}
   {{- end }} {{- /* PeerOrgs */ -}}
+  {{- end }} {{- /* hlfSetupIngress */ -}}

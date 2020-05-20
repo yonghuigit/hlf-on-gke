@@ -176,6 +176,8 @@ spec:
           value: "true" # looks like absolutely necessary, o/w chaincode instantiate fails, no clue why
         - name: CORE_OPERATIONS_LISTENADDRESS
           value: 0.0.0.0:8443
+        - name: CORE_METRICS_PROVIDER
+          value: {{ $.Values.peer.operations.metrics.provider }}
         - name: CORE_CHAINCODE_LOGGING_LEVEL
           value: {{ $.Values.peer.chaincode.logging.level }}
         - name: CORE_CHAINCODE_LOGGING_SHIM
