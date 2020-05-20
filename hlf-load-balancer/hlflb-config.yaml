@@ -1,0 +1,18 @@
+imports:
+- path: hlflb.py
+
+# In the resources section below, the properties of the resources are replaced
+# with the names of the templates.
+resources:
+- name: hlf-load-balancer
+  type: hlflb.py
+  properties:
+    domain: '.getsafefood.com'
+    loadBalancerIP: '34.98.90.83'
+    loadBalancerPort: 443
+    project: 'yongssandbox'
+    zones: ['us-west1-a', 'us-west1-b', 'us-west1-c']
+    namespace: 'gke-hlf-ns'
+    defaultPool: 'gke-ibcdev-cluster-default-pool'
+    gcpCredentialFile: 'yongssandbox-b94429e63adf.json'
+    instanceNetworkTag: 'gke-ibcdev-cluster-91cdbcb0-node'

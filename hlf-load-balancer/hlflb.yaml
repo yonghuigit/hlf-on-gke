@@ -1,0 +1,144 @@
+imports:
+- path: hlflb.py
+resources:
+- name: hlf-load-balancer
+  properties:
+    backends:
+    - orderer-cluster-nodeport: 30977
+    - orderer-cluster-nodeport: 30684
+    - orderer-ord-0-cluster-nodeport: 30401
+    - orderer-ord-0-cluster-nodeport: 32690
+    - orderer-ord-1-cluster-nodeport: 30393
+    - orderer-ord-1-cluster-nodeport: 30519
+    - orderer-ord-2-cluster-nodeport: 30496
+    - orderer-ord-2-cluster-nodeport: 32622
+    - org1-ca-cluster-nodeport: 30288
+    - org1-cluster-nodeport: 31007
+    - org1-cluster-nodeport: 30190
+    - org1-peer-0-cluster-nodeport: 32143
+    - org1-peer-0-cluster-nodeport: 30656
+    - org1-peer-1-cluster-nodeport: 32208
+    - org1-peer-1-cluster-nodeport: 31435
+    - org1-peer-2-cluster-nodeport: 31479
+    - org1-peer-2-cluster-nodeport: 30567
+    - org2-ca-cluster-nodeport: 31451
+    - org2-cluster-nodeport: 30671
+    - org2-cluster-nodeport: 30543
+    - org2-peer-0-cluster-nodeport: 32427
+    - org2-peer-0-cluster-nodeport: 32483
+    - org2-peer-1-cluster-nodeport: 31832
+    - org2-peer-1-cluster-nodeport: 30018
+    - org2-peer-2-cluster-nodeport: 31628
+    - org2-peer-2-cluster-nodeport: 30411
+    defaultPool: gke-ibcdev-cluster-default-pool
+    domain: .getsafefood.com
+    firewallPorts:
+    - 30977
+    - 30684
+    - 30401
+    - 32690
+    - 30393
+    - 30519
+    - 30496
+    - 32622
+    - 30288
+    - 31007
+    - 30190
+    - 32143
+    - 30656
+    - 32208
+    - 31435
+    - 31479
+    - 30567
+    - 31451
+    - 30671
+    - 30543
+    - 32427
+    - 32483
+    - 31832
+    - 30018
+    - 31628
+    - 30411
+    gcpCredentialFile: yongssandbox-b94429e63adf.json
+    healthChecks:
+      orderer-cluster-nodeport: 30684
+      orderer-ord-0-cluster-nodeport: 32690
+      orderer-ord-1-cluster-nodeport: 30519
+      orderer-ord-2-cluster-nodeport: 32622
+      org1-ca-cluster-nodeport: 30288
+      org1-cluster-nodeport: 30190
+      org1-peer-0-cluster-nodeport: 30656
+      org1-peer-1-cluster-nodeport: 31435
+      org1-peer-2-cluster-nodeport: 30567
+      org2-ca-cluster-nodeport: 31451
+      org2-cluster-nodeport: 30543
+      org2-peer-0-cluster-nodeport: 32483
+      org2-peer-1-cluster-nodeport: 30018
+      org2-peer-2-cluster-nodeport: 30411
+    instanceGroupNamedPorts:
+    - name: port30977
+      port: 30977
+    - name: port30684
+      port: 30684
+    - name: port30401
+      port: 30401
+    - name: port32690
+      port: 32690
+    - name: port30393
+      port: 30393
+    - name: port30519
+      port: 30519
+    - name: port30496
+      port: 30496
+    - name: port32622
+      port: 32622
+    - name: port30288
+      port: 30288
+    - name: port31007
+      port: 31007
+    - name: port30190
+      port: 30190
+    - name: port32143
+      port: 32143
+    - name: port30656
+      port: 30656
+    - name: port32208
+      port: 32208
+    - name: port31435
+      port: 31435
+    - name: port31479
+      port: 31479
+    - name: port30567
+      port: 30567
+    - name: port31451
+      port: 31451
+    - name: port30671
+      port: 30671
+    - name: port30543
+      port: 30543
+    - name: port32427
+      port: 32427
+    - name: port32483
+      port: 32483
+    - name: port31832
+      port: 31832
+    - name: port30018
+      port: 30018
+    - name: port31628
+      port: 31628
+    - name: port30411
+      port: 30411
+    instanceInZones:
+      us-west1-a: https://www.googleapis.com/compute/v1/projects/yongssandbox/zones/us-west1-a/instances/gke-ibcdev-cluster-default-pool-027df7b5-7h3t
+      us-west1-b: https://www.googleapis.com/compute/v1/projects/yongssandbox/zones/us-west1-b/instances/gke-ibcdev-cluster-default-pool-81cf67ae-jlgx
+      us-west1-c: https://www.googleapis.com/compute/v1/projects/yongssandbox/zones/us-west1-c/instances/gke-ibcdev-cluster-default-pool-3bf8d124-sd6x
+    instanceNetworkTag: gke-ibcdev-cluster-91cdbcb0-node
+    loadBalancerIP: 34.98.90.83
+    loadBalancerPort: 443
+    namespace: gke-hlf-ns
+    project: yongssandbox
+    zones:
+    - us-west1-a
+    - us-west1-b
+    - us-west1-c
+  type: hlflb.py

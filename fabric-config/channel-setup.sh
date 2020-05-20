@@ -43,7 +43,7 @@ export IBC_PEER_ORG2_PEER1=peer-1.$ORG2_DOMAIN:443
 export IBC_PEER_ORG2_PEER2=peer-2.$ORG2_DOMAIN:443
 export IBC_ORG1_ADMIN_MSP=./crypto-config/peerOrganizations/$ORG1_DOMAIN/users/Admin@$ORG1_DOMAIN/msp
 export IBC_ORG2_ADMIN_MSP=./crypto-config/peerOrganizations/$ORG2_DOMAIN/users/Admin@$ORG2_DOMAIN/msp
-export CORE_PEER_TLS_ROOTCERT_FILE=./letsencrypt.pem
+export CORE_PEER_TLS_ROOTCERT_FILE=./gts.pem
 
 
 export CORE_PEER_LOCALMSPID="Org1MSP"
