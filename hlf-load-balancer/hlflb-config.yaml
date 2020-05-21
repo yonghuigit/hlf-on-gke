@@ -16,3 +16,4 @@ resources:
     defaultPool: 'gke-ibcdev-cluster-default-pool'
     instanceNetworkTag: 'gke-ibcdev-cluster-91cdbcb0-node'
     gcpCredentialFile: 'set to json file if using service account and uncomment code in setup.py'
+    network: 'dev-sqe-uat'

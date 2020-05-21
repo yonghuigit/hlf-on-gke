@@ -33,6 +33,7 @@ def generate_config(context):
     inst_net_tag = context.properties['instanceNetworkTag']
     firewall_ports = context.properties['firewallPorts']
     description = ' created for L7 load balancer/hyperledger fabric'
+    network = context.properties['network']
 
     """Generate Instance Groups - one per zone - and associate instances from default pool to the new IG"""
     for zone in ['us-west1-a', 'us-west1-b', 'us-west1-c']:
@@ -239,11 +240,12 @@ def generate_config(context):
         'name': inst_net_tag + '-' + context.env['name'],
         'type': 'compute.v1.firewall',
         'properties': {
+            'network': network,
             'allowed': [{
                 'IPProtocol': 'TCP',
                 'ports': firewall_ports
             }],
-            'sourceRanges': ['0.0.0.0/0'],
+            'sourceRanges': ['209.85.152.0/22', '209.85.204.0/22', '35.191.0.0/16', '130.211.0.0/22'],
             'targetTags': [inst_net_tag]
         }
     }
