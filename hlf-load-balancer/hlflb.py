@@ -3,20 +3,20 @@ COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/projects/'
 
 def service_to_subdomain():
     return {
-        'orderer-cluster-nodeport': 'orderer',
-        'orderer-ord-0-cluster-nodeport': 'ord-0.orderer',
-        'orderer-ord-1-cluster-nodeport': 'ord-1.orderer',
-        'orderer-ord-2-cluster-nodeport': 'ord-2.orderer',
-        'org1-ca-cluster-nodeport': 'ca.org1',
-        'org1-cluster-nodeport': 'peer.org1',
-        'org1-peer-0-cluster-nodeport': 'peer-0.org1',
-        'org1-peer-1-cluster-nodeport': 'peer-1.org1',
-        'org1-peer-2-cluster-nodeport': 'peer-2.org1',
-        'org2-ca-cluster-nodeport': 'ca.org2',
-        'org2-cluster-nodeport': 'peer.org2',
-        'org2-peer-0-cluster-nodeport': 'peer-0.org2',
-        'org2-peer-1-cluster-nodeport': 'peer-1.org2',
-        'org2-peer-2-cluster-nodeport': 'peer-2.org2'
+        'orderer-cluster-nodeport': 'ibcorderer',
+        'orderer-ord-0-cluster-nodeport': 'ord-0.ibcorderer',
+        'orderer-ord-1-cluster-nodeport': 'ord-1.ibcorderer',
+        'orderer-ord-2-cluster-nodeport': 'ord-2.ibcorderer',
+        'org1-ca-cluster-nodeport': 'ca.ibcorg1',
+        'org1-cluster-nodeport': 'peer.ibcorg1',
+        'org1-peer-0-cluster-nodeport': 'peer-0.ibcorg1',
+        'org1-peer-1-cluster-nodeport': 'peer-1.ibcorg1',
+        'org1-peer-2-cluster-nodeport': 'peer-2.ibcorg1',
+        'org2-ca-cluster-nodeport': 'ca.ibcorg2',
+        'org2-cluster-nodeport': 'peer.ibcorg2',
+        'org2-peer-0-cluster-nodeport': 'peer-0.ibcorg2',
+        'org2-peer-1-cluster-nodeport': 'peer-1.ibcorg2',
+        'org2-peer-2-cluster-nodeport': 'peer-2.ibcorg2'
     }
 
 
