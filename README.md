@@ -15,7 +15,7 @@ go version
 
 ## 2. Install Hyperledger Fabric command line tools locally.
 ```
-curl -sSL http://bit.ly/2ysbOFE | bash -s 1.4.4
+curl -sSL http://bit.ly/2ysbOFE | bash -s 2.1.0
 export PATH=$PATH:~/fabric-samples/bin
 # check that Fabric command line tools are on your path
 peer version
@@ -96,6 +96,9 @@ gcloud compute addresses describe hlf-load-balancer-static-ip --global --format=
 
 # In your domain DNS management tool, make sure to point following domains to the static ip
 orderer.yourdomain.com
+ord-0.orderer.yourdomain.com
+ord-1.orderer.yourdomain.com
+ord-2.orderer.yourdomain.com
 peer.org1.yourdomain.com
 peer-0.org1.yourdomain.com
 peer-1.org1.yourdomain.com
@@ -106,6 +109,27 @@ peer-1.org2.yourdomain.com
 peer-2.org2.yourdomain.com
 ca.org1.yourdomain.com
 ca.org2.yourdomain.com
+
+# Now Run GCP Deployment Script for the load balancer
+sudo apt update
+sudo apt install python3 python3-dev python3-venv python-pip
+cd hlf-load-balancer
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install --upgrade wheel
+pip install kubernetes
+pip install google-api-python-client
+# Double Check gcloud setting
+gcloud auth list
+gcloud config list
+# Change values in hlflb-config.yaml
+python3 setup.py
+gcloud deployment-manager deployments list
+gcloud deployment-manager deployments delete hlf-load-balancer
+gcloud deployment-manager deployments create hlf-load-balancer --config=hlflb.yaml
+
+# https://cloud.google.com/docs/authentication/getting-started
 
 # Wait for the load balancer to show up and the certificates to be provisioned. This might take 15 minutes.
 ```

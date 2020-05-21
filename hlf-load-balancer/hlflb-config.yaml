@@ -14,5 +14,5 @@ resources:
     zones: ['us-west1-a', 'us-west1-b', 'us-west1-c']
     namespace: 'gke-hlf-ns'
     defaultPool: 'gke-ibcdev-cluster-default-pool'
-    gcpCredentialFile: 'yongssandbox-b94429e63adf.json'
     instanceNetworkTag: 'gke-ibcdev-cluster-91cdbcb0-node'
+    gcpCredentialFile: 'set to json file if using service account and uncomment code in setup.py'

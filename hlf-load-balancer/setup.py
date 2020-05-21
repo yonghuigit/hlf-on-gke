@@ -63,8 +63,8 @@ def get_backend_and_healthcheck_config(namespace):
 ############################################
 with open('hlflb-config.yaml') as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
-
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config['resources'][0]['properties']['gcpCredentialFile']
+    # if using service account, need to set this environment variable
+    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config['resources'][0]['properties']['gcpCredentialFile']
     proj = config['resources'][0]['properties']['project']
     zos = config['resources'][0]['properties']['zones']
     ns = config['resources'][0]['properties']['namespace']
