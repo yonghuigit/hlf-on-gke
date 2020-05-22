@@ -2,6 +2,27 @@ from kubernetes import client as k8s_client, config as k8s_config
 import googleapiclient.discovery
 import os, yaml
 
+def get_service_to_domain_mapping():
+    cn_suffix = '-cluster-nodeport'
+    with open('../fabric-config/crypto-config.yaml') as crypto_config_file:
+        crypto_config = yaml.load(crypto_config_file, Loader=yaml.FullLoader)
+        orderer_orgs = crypto_config['OrdererOrgs']
+        peer_orgs = crypto_config['PeerOrgs']
+        service_to_domain_mapping = {}
+        orgs = orderer_orgs + peer_orgs
+        for org in orgs:
+            org_name = org['Name'].lower()
+            org_domain = org['Domain'].lower()
+            if 'orderer' in org_name:
+                service_to_domain_mapping[org_name + cn_suffix] = org_domain
+            else:
+                service_to_domain_mapping[org_name + cn_suffix] = 'peer.' + org_domain
+                service_to_domain_mapping[org_name + '-ca' + cn_suffix] = 'ca.' + org_domain
+
+            for host in org['Specs']:
+                host_name = host['Hostname']
+                service_to_domain_mapping[org_name + '-' + host_name + cn_suffix] = host_name + '.' + org_domain
+        return service_to_domain_mapping
 
 def get_instance_in_zones(project, zones, default_pool):
     compute = googleapiclient.discovery.build('compute', 'v1')
@@ -81,6 +102,9 @@ with open('hlflb-config.yaml') as file:
 
     instances_zones = get_instance_in_zones(proj, zos, defp)
     config['resources'][0]['properties']['instanceInZones'] = instances_zones
+
+    serv_to_domain_map = get_service_to_domain_mapping()
+    config['resources'][0]['properties']['servToDomainMapping'] = serv_to_domain_map
 
     with open('hlflb.yaml', 'w') as outputfile:
         documents = yaml.dump(config, outputfile)

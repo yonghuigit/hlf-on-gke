@@ -1,29 +1,9 @@
 COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/projects/'
 
-
-def service_to_subdomain():
-    return {
-        'orderer-cluster-nodeport': 'ibcorderer',
-        'orderer-ord-0-cluster-nodeport': 'ord-0.ibcorderer',
-        'orderer-ord-1-cluster-nodeport': 'ord-1.ibcorderer',
-        'orderer-ord-2-cluster-nodeport': 'ord-2.ibcorderer',
-        'org1-ca-cluster-nodeport': 'ca.ibcorg1',
-        'org1-cluster-nodeport': 'peer.ibcorg1',
-        'org1-peer-0-cluster-nodeport': 'peer-0.ibcorg1',
-        'org1-peer-1-cluster-nodeport': 'peer-1.ibcorg1',
-        'org1-peer-2-cluster-nodeport': 'peer-2.ibcorg1',
-        'org2-ca-cluster-nodeport': 'ca.ibcorg2',
-        'org2-cluster-nodeport': 'peer.ibcorg2',
-        'org2-peer-0-cluster-nodeport': 'peer-0.ibcorg2',
-        'org2-peer-1-cluster-nodeport': 'peer-1.ibcorg2',
-        'org2-peer-2-cluster-nodeport': 'peer-2.ibcorg2'
-    }
-
-
 def generate_config(context):
     """Generate YAML resource configuration."""
     config = {'resources': []}
-    root_domain = context.properties['domain']
+    project =  context.properties['project']
     lb_ip = context.properties['loadBalancerIP']
     zone_config = context.properties['zones']
     named_ports = context.properties['instanceGroupNamedPorts']
@@ -32,8 +12,12 @@ def generate_config(context):
     backends = context.properties['backends']
     inst_net_tag = context.properties['instanceNetworkTag']
     firewall_ports = context.properties['firewallPorts']
+    firewall_source_range = context.properties['firewallSourceRange']
+    service_to_domain_mapping = context.properties['servToDomainMapping']
+    network_name = context.properties['network']
+
+    network_url = COMPUTE_URL_BASE + project + '/global/networks/' + network_name
     description = ' created for L7 load balancer/hyperledger fabric'
-    network = context.properties['network']
 
     """Generate Instance Groups - one per zone - and associate instances from default pool to the new IG"""
     for zone in ['us-west1-a', 'us-west1-b', 'us-west1-c']:
@@ -53,9 +37,6 @@ def generate_config(context):
         add_instance = {
             'name': ig_name + '-add-instance',
             'action': 'gcp-types/compute-v1:compute.instanceGroups.addInstances',
-            # 'metadata': {
-            #     'runtimePolicy': ['UPDATE_ON_CHANGE'],
-            # },
             'properties': {
                     'zone': zone,
                     'instanceGroup': '$(ref.{}.name)'.format(ig_name),
@@ -154,7 +135,7 @@ def generate_config(context):
 
     for service, port in health_checks.items():
         host_rule = {
-            'hosts': [service_to_subdomain()[service] + root_domain],
+            'hosts': [service_to_domain_mapping[service]],
             'pathMatcher': 'pm-for-' + service
         }
         url_map['properties']['hostRules'].append(host_rule)
@@ -204,9 +185,8 @@ def generate_config(context):
         }
     }
 
-    service_subdomains = service_to_subdomain()
-    for serv, subdomain in service_subdomains.items():
-        ssl_cert['properties']['managed']['domains'].append(subdomain + root_domain)
+    for serv, domain in service_to_domain_mapping.items():
+        ssl_cert['properties']['managed']['domains'].append(domain)
 
     config['resources'].append(ssl_cert)
 
@@ -240,12 +220,12 @@ def generate_config(context):
         'name': inst_net_tag + '-' + context.env['name'],
         'type': 'compute.v1.firewall',
         'properties': {
-            'network': network,
+            'network': network_url,
             'allowed': [{
                 'IPProtocol': 'TCP',
                 'ports': firewall_ports
             }],
-            'sourceRanges': ['209.85.152.0/22', '209.85.204.0/22', '35.191.0.0/16', '130.211.0.0/22'],
+            'sourceRanges': firewall_source_range,
             'targetTags': [inst_net_tag]
         }
     }
