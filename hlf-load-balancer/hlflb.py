@@ -1,9 +1,6 @@
-COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/projects/'
-
 def generate_config(context):
     """Generate YAML resource configuration."""
     config = {'resources': []}
-    project =  context.properties['project']
     lb_ip = context.properties['loadBalancerIP']
     zone_config = context.properties['zones']
     named_ports = context.properties['instanceGroupNamedPorts']
@@ -14,9 +11,7 @@ def generate_config(context):
     firewall_ports = context.properties['firewallPorts']
     firewall_source_range = context.properties['firewallSourceRange']
     service_to_domain_mapping = context.properties['servToDomainMapping']
-    network_name = context.properties['network']
-
-    network_url = COMPUTE_URL_BASE + project + '/global/networks/' + network_name
+    network_url = context.properties['network']
     description = ' created for L7 load balancer/hyperledger fabric'
 
     """Generate Instance Groups - one per zone - and associate instances from default pool to the new IG"""
@@ -217,7 +212,7 @@ def generate_config(context):
 
     """Generate Firewall Rule"""
     firewall_rule = {
-        'name': inst_net_tag + '-' + context.env['name'],
+        'name': inst_net_tag[0] + '-' + context.env['name'],
         'type': 'compute.v1.firewall',
         'properties': {
             'network': network_url,
@@ -226,7 +221,7 @@ def generate_config(context):
                 'ports': firewall_ports
             }],
             'sourceRanges': firewall_source_range,
-            'targetTags': [inst_net_tag]
+            'targetTags': inst_net_tag
         }
     }
 

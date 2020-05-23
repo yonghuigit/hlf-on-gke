@@ -9,10 +9,7 @@ resources:
   properties:
     loadBalancerIP: '34.98.90.83'
     project: 'yongssandbox'
-    network: 'default'
-    instanceNetworkTag: 'gke-ibcdev-cluster-91cdbcb0-node'
     zones: ['us-west1-a', 'us-west1-b', 'us-west1-c']
-    namespace: 'gke-hlf-ns'
-    defaultPool: 'gke-ibcdev-cluster-default-pool'
+    clusterName: 'ibcdev-cluster'
     firewallSourceRange: ['209.85.152.0/22', '209.85.204.0/22', '35.191.0.0/16', '130.211.0.0/22']
-    gcpCredentialFile: 'set to json file if using service account and uncomment code in setup.py'
+    gcpCredentialFile: 'serviceaccount.json'
