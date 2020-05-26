@@ -42,7 +42,9 @@ Organizations:
                 Rule: "OR('OrdererMSP.admin')"
 
         OrdererEndpoints:
-            - _ORDERER_ORG_DOMAIN_:443
+            - ord-0._ORDERER_ORG_DOMAIN_:443
+            - ord-1._ORDERER_ORG_DOMAIN_:443
+            - ord-2._ORDERER_ORG_DOMAIN_:443
 
     - &Org1
         # DefaultOrg defines the organization which is used in the sampleconfig
