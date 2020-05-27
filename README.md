@@ -143,5 +143,5 @@ cd fabric-config
 ```
 ## 15. Optionally package crypto files and configtx.yaml, et. al.
 ```
-crypto.tar.gz gts.pem configtx.yaml crypto-config/*/*/users crypto-config/*/*/*/*/*/cacerts
+tar cvfz crypto.tar.gz gts.pem configtx.yaml crypto-config/*/*/users crypto-config/*/*/*/*/*/cacerts
 ```
