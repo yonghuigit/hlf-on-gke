@@ -36,7 +36,7 @@ peer:
 couchdb:
   version: 2.3
   userName: peercouchuser
-  password: thi3I3couch
+  password: pwdforCouchDB
   persistence:
     size: 30Gi
 
@@ -50,7 +50,7 @@ orderer:
 # CA (Certificate Authority) settings. applies to all CA's
 ca:
   userName: caadminuser
-  password: thi3I3caAdmin
+  password: pwdforCaAdmin
   logLevel: info
   # TODO storage classs?
   persistence:

@@ -36,10 +36,11 @@ gcloud auth login
 gcloud config set project PROJECT_NAME
 gcloud beta container clusters get-credentials CLUSTER_NAME --region REGION --project PROJECT_NAME
 ```
-## 5. Clone this project locally
+## 5. Clone this project locally and change configuration accordingly (persistence size, passwords et. al.)
 ```
 git clone https://github.com/yonghuigit/hlf-on-gke.git  
 cd hlf-on-gke
+vi hlf-network/values.yaml
 ```
 ## 6. Generate crypto materials and genesis block 
 ### modify fabric-config/setvars.sh to set the variables to the correct values, e.g. use your own registered domain 
@@ -126,7 +127,7 @@ gcloud deployment-manager deployments create hlf-load-balancer --config=hlflb.ya
 # Wait for the load balancer to show up and the certificates to be provisioned. This might take 15 minutes.
 ```
 
-## 11. Check in GCP Console -> Kubernetes Engine to make sure all Workloads, Services & Ingress are displaying green.
+## 11. Check in GCP Console -> Kubernetes Engine to make sure all Workloads, Services, Storage & Configuration look good.
 
 ## 12. Check in GCP Console -> Network services -> Load balancing
 
