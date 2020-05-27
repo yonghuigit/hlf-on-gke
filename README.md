@@ -41,12 +41,7 @@ gcloud beta container clusters get-credentials CLUSTER_NAME --region REGION --pr
 git clone https://github.com/yonghuigit/hlf-on-gke.git  
 cd hlf-on-gke
 ```
-## 6. Note: if you are using Helm 2, set up helm/tiller on the cluster. Skip this step if you are using Helm 3
-```
-kubectl create -f kube-common/rbac-config.yaml  
-helm init --service-account tiller --history-max 200
-```
-## 7. Generate crypto materials and genesis block 
+## 6. Generate crypto materials and genesis block 
 ### modify fabric-config/setvars.sh to set the variables to the correct values, e.g. use your own registered domain 
 ```
 ### export SYS_CHANNEL_NAME=ibc-sys-channel
@@ -58,23 +53,19 @@ helm init --service-account tiller --history-max 200
 ```
 ./fabric-config/generate.sh
 ```
-## 8. Get the clusterIP for kube-dns and set hlfKubeDNSSvcIP. GKE v1.13.x, v1.14.x uses kube-dns rather than core-dns. Our script will install core-dns and will use custom stub domains to redirect domain lookup for *.yourdomain.com to core-dns. core-dns will rewrite the custom domain names to cluster local domain names. Then it will redirect back to kube-dns to resolve to cluster IP addresses for the orderer, peer nodes. 
+## 7. Get the clusterIP for kube-dns and set hlfKubeDNSSvcIP. GKE v1.13.x, v1.14.x uses kube-dns rather than core-dns. Our script will install core-dns and will use custom stub domains to redirect domain lookup for *.yourdomain.com to core-dns. core-dns will rewrite the custom domain names to cluster local domain names. Then it will redirect back to kube-dns to resolve to cluster IP addresses for the orderer, peer nodes. 
 ```
 export KUBE_DNS_IP=$(kubectl get --namespace kube-system -o jsonpath='{.spec.clusterIP}{"\n"}' services kube-dns); echo $KUBE_DNS_IP
 ```
-## 9. Register a static ip to be used for the load balancer and as the targe IP for all the domain names of the nodes. The ingress/load balancer create host and path rules to connect the URLs to the correct backends.
+## 8. Register a static ip to be used for the load balancer and as the targe IP for all the domain names of the nodes. The ingress/load balancer create host and path rules to connect the URLs to the correct backends.
 ```
 gcloud compute addresses create hlf-load-balancer-static-ip --global
 ```
-## 10. If you are using Helm 2, run helm install with
-```
-helm install hlf-network -f ./hlf-network/crypto-config.yaml -f hlf-network/values.yaml  -n hlf-network-prod --set hlfKubeDNSSvcIP=$KUBE_DNS_IP --set hlfLBStaticIPName=hlf-load-balancer-static-ip
-```
-## 11. If you are using Helm 3, use this command instead
+## 9. Make sure you are using Helm 3 and above: helm version
 ```
 helm install hlf-network-prod hlf-network -f ./hlf-network/crypto-config.yaml -f hlf-network/values.yaml --set hlfKubeDNSSvcIP=$KUBE_DNS_IP --set hlfLBStaticIPName=hlf-load-balancer-static-ip
 ```
-## 12. Continue to follow the instructions printed at the end of the helm install. It will look something like this. Make sure to use the domain names printed.
+## 10. Continue to follow the instructions printed at the end of the helm install. It will look something like this. Make sure to use the domain names printed.
 ```
 NOTES:
 # Helm install finished.
@@ -130,21 +121,22 @@ gcloud deployment-manager deployments delete hlf-load-balancer
 gcloud deployment-manager deployments create hlf-load-balancer --config=hlflb.yaml
 
 # https://cloud.google.com/docs/authentication/getting-started
+# Editor role is fine is using a service account for the project
 
 # Wait for the load balancer to show up and the certificates to be provisioned. This might take 15 minutes.
 ```
 
-## 13. Check in GCP Console -> Kubernetes Engine to make sure all Workloads, Services & Ingress are displaying green.
+## 11. Check in GCP Console -> Kubernetes Engine to make sure all Workloads, Services & Ingress are displaying green.
 
-## 14. Check in GCP Console -> Network services -> Load balancing
+## 12. Check in GCP Console -> Network services -> Load balancing
 
-## 15. Set up a channel named 'ibcchannel-dev' in the network that we just created
+## 13. Set up a channel named 'ibcchannel-dev' in the network that we just created
 ```
 cd fabric-config
 ./channel-setup.sh ibcchannel-dev
 ```
 
-## 16. Install and instantiate chaincode fabcar on the channel 'ibcchannel-dev'
+## 14. Install and instantiate chaincode fabcar on the channel 'ibcchannel-dev'
 ```
 ./chaincode-fabcar.sh ibcchannel-dev
 ```
