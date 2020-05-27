@@ -121,7 +121,7 @@ gcloud deployment-manager deployments delete hlf-load-balancer
 gcloud deployment-manager deployments create hlf-load-balancer --config=hlflb.yaml
 
 # https://cloud.google.com/docs/authentication/getting-started
-# Editor role is fine is using a service account for the project
+# Editor role is fine if using a service account for the project
 
 # Wait for the load balancer to show up and the certificates to be provisioned. This might take 15 minutes.
 ```
@@ -139,4 +139,8 @@ cd fabric-config
 ## 14. Install and instantiate chaincode fabcar on the channel 'ibcchannel-dev'
 ```
 ./chaincode-fabcar.sh ibcchannel-dev
+```
+## 15. Optionally package crypto files and configtx.yaml, et. al.
+```
+tar zcvf crypto.tar.gz gts.pem configtx.yaml crypto-config/*/*/users
 ```
