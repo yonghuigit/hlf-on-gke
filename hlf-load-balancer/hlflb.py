@@ -60,6 +60,11 @@ def generate_config(context):
             health_check['properties']['httpsHealthCheck'] = {}
             health_check['properties']['httpsHealthCheck']['requestPath'] = '/cainfo'
             health_check['properties']['httpsHealthCheck']['port'] = port
+        elif 'grafana' in service:
+            health_check['properties']['type'] = 'HTTP'
+            health_check['properties']['httpHealthCheck'] = {}
+            health_check['properties']['httpHealthCheck']['requestPath'] = '/api/health'
+            health_check['properties']['httpHealthCheck']['port'] = port
         else:
             health_check['properties']['type'] = 'HTTP'
             health_check['properties']['httpHealthCheck'] = {}
@@ -149,19 +154,20 @@ def generate_config(context):
 
         if '-ca-cluster-' in service:
             path_rule1['paths'] = ['/cainfo', '/*']
+        elif 'grafana' in service:
+            path_rule1['paths'] = ['/api/health', '/*']
 
         path_matcher['pathRules'].append(path_rule1)
 
-        if '-ca-cluster-' not in service:
-            path_rule2 = {
-                'paths': ['/*']
-            }
-            for service_port in backends:
-                for service2, port2 in service_port.items():
-                    if service2 == service and port2 != port:
-                        be_name2 = 'be-' + service + '-' + context.env['name'] + '-' + str(port2)
-                        path_rule2['service'] = '$(ref.' + be_name2 + '.selfLink)'
-            path_matcher['pathRules'].append(path_rule2)
+        path_rule2 = {
+            'paths': ['/*']
+        }
+        for service_port in backends:
+            for service2, port2 in service_port.items():
+                if service2 == service and port2 != port:
+                    be_name2 = 'be-' + service + '-' + context.env['name'] + '-' + str(port2)
+                    path_rule2['service'] = '$(ref.' + be_name2 + '.selfLink)'
+                    path_matcher['pathRules'].append(path_rule2)
 
         url_map['properties']['pathMatchers'].append(path_matcher)
 

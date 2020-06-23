@@ -12,10 +12,12 @@ def get_service_to_domain_mapping(load_balance_nodes, ca_enabled):
         peer_orgs = crypto_config['PeerOrgs']
         service_to_domain_mapping = {}
         orgs = orderer_orgs + peer_orgs
+        root_domain = ''
         for org in orgs:
             org_name = org['Name'].lower()
             org_domain = org['Domain'].lower()
             if 'orderer' in org_name:
+                root_domain = org_domain[7:]
                 if load_balance_nodes:
                     service_to_domain_mapping[org_name + cn_suffix] = org_domain
             else:
@@ -27,6 +29,8 @@ def get_service_to_domain_mapping(load_balance_nodes, ca_enabled):
             for host in org['Specs']:
                 host_name = host['Hostname']
                 service_to_domain_mapping[org_name + '-' + host_name + cn_suffix] = host_name + '.' + org_domain
+
+        service_to_domain_mapping['grafana'] = 'monitor' + root_domain
         return service_to_domain_mapping
 
 
@@ -87,7 +91,7 @@ def get_backend_and_healthcheck_config(namespace):
             if not j.node_port:
                 continue
             backend_config.append({i.metadata.name: j.node_port})
-            if j.port == 8443 or '-ca-cluster-' in i.metadata.name:
+            if j.port == 8443 or '-ca-cluster-' in i.metadata.name or 'grafana' == i.metadata.name:
                 health_check_config[i.metadata.name] = j.node_port
 
     return [health_check_config, backend_config]
@@ -132,4 +136,3 @@ with open('hlflb-config.yaml') as config_file, \
     config['resources'][0]['properties']['servToDomainMapping'] = serv_to_domain_map
 
     documents = yaml.dump(config, outputfile)
-
